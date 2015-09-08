@@ -1,13 +1,13 @@
 /*
     Android Asynchronous Http Client
     Copyright (c) 2011 James Smith <james@loopj.com>
-    http://loopj.com
+    https://loopj.com
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
     You may obtain a copy of the License at
 
-        http://www.apache.org/licenses/LICENSE-2.0
+        https://www.apache.org/licenses/LICENSE-2.0
 
     Unless required by applicable law or agreed to in writing, software
     distributed under the License is distributed on an "AS IS" BASIS,
@@ -23,6 +23,14 @@
 
 package com.rae.core.http.async;
 
+import android.os.SystemClock;
+
+import org.apache.http.NoHttpResponseException;
+import org.apache.http.client.HttpRequestRetryHandler;
+import org.apache.http.client.methods.HttpUriRequest;
+import org.apache.http.protocol.ExecutionContext;
+import org.apache.http.protocol.HttpContext;
+
 import java.io.IOException;
 import java.io.InterruptedIOException;
 import java.net.SocketException;
@@ -31,17 +39,9 @@ import java.util.HashSet;
 
 import javax.net.ssl.SSLException;
 
-import org.apache.http.NoHttpResponseException;
-import org.apache.http.client.HttpRequestRetryHandler;
-import org.apache.http.client.methods.HttpUriRequest;
-import org.apache.http.protocol.ExecutionContext;
-import org.apache.http.protocol.HttpContext;
-
-import android.os.SystemClock;
-
 class RetryHandler implements HttpRequestRetryHandler {
-    private final static HashSet<Class<?>> exceptionWhitelist = new HashSet();
-    private final static HashSet<Class<?>> exceptionBlacklist = new HashSet();
+    private final static HashSet<Class<?>> exceptionWhitelist = new HashSet<Class<?>>();
+    private final static HashSet<Class<?>> exceptionBlacklist = new HashSet<Class<?>>();
 
     static {
         // Retry if the server dropped connection on us

@@ -1,7 +1,22 @@
-package com.rae.core.http.async;
+/*
+    Android Asynchronous Http Client
+    Copyright (c) 2014 Aymon Fournier <aymon.fournier@gmail.com>
+    https://loopj.com
 
-import java.net.URI;
-import java.net.URISyntaxException;
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+        https://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+*/
+
+package com.rae.core.http.async;
 
 import org.apache.http.Header;
 import org.apache.http.HttpHost;
@@ -18,7 +33,15 @@ import org.apache.http.params.HttpParams;
 import org.apache.http.protocol.ExecutionContext;
 import org.apache.http.protocol.HttpContext;
 
-// taken from: https://stackoverflow.com/questions/3420767/httpclient-redirecting-to-url-with-spaces-throwing-exception
+import java.net.URI;
+import java.net.URISyntaxException;
+
+/**
+ * Taken from StackOverflow
+ *
+ * @author Aymon Fournier, aymon.fournier@gmail.com
+ * @see <a href="https://stackoverflow.com/questions/3420767/httpclient-redirecting-to-url-with-spaces-throwing-exception">https://stackoverflow.com/questions/3420767/httpclient-redirecting-to-url-with-spaces-throwing-exception</a>
+ */
 class MyRedirectHandler extends DefaultRedirectHandler {
 
     private static final String REDIRECT_LOCATIONS = "http.protocol.redirect-locations";
@@ -29,6 +52,7 @@ class MyRedirectHandler extends DefaultRedirectHandler {
         this.enableRedirects = allowRedirects;
     }
 
+    @Override
     public boolean isRedirectRequested(
             final HttpResponse response,
             final HttpContext context) {
@@ -50,6 +74,7 @@ class MyRedirectHandler extends DefaultRedirectHandler {
         } //end of switch
     }
 
+    @Override
     public URI getLocationURI(
             final HttpResponse response,
             final HttpContext context) throws ProtocolException {
@@ -65,7 +90,7 @@ class MyRedirectHandler extends DefaultRedirectHandler {
                             + " but no location header"
             );
         }
-//HERE IS THE MODIFIED LINE OF CODE
+        //HERE IS THE MODIFIED LINE OF CODE
         String location = locationHeader.getValue().replaceAll(" ", "%20");
 
         URI uri;

@@ -1,13 +1,13 @@
 /*
     Android Asynchronous Http Client
     Copyright (c) 2011 James Smith <james@loopj.com>
-    http://loopj.com
+    https://loopj.com
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
     You may obtain a copy of the License at
 
-        http://www.apache.org/licenses/LICENSE-2.0
+        https://www.apache.org/licenses/LICENSE-2.0
 
     Unless required by applicable law or agreed to in writing, software
     distributed under the License is distributed on an "AS IS" BASIS,
@@ -18,16 +18,16 @@
 
 package com.rae.core.http.async;
 
-import java.io.IOException;
-import java.util.regex.Pattern;
-import java.util.regex.PatternSyntaxException;
+import android.os.Looper;
 
 import org.apache.http.Header;
 import org.apache.http.HttpResponse;
 import org.apache.http.StatusLine;
 import org.apache.http.client.HttpResponseException;
 
-import android.util.Log;
+import java.io.IOException;
+import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 
 /**
  * Used to intercept and handle the responses from requests made using {@link AsyncHttpClient}.
@@ -36,7 +36,7 @@ import android.util.Log;
  * <pre>
  * AsyncHttpClient client = new AsyncHttpClient();
  * String[] allowedTypes = new String[] { "image/png" };
- * client.get("http://www.example.com/image.png", new BinaryHttpResponseHandler(allowedTypes) {
+ * client.get("https://www.example.com/image.png", new BinaryHttpResponseHandler(allowedTypes) {
  *     &#064;Override
  *     public void onSuccess(byte[] imageData) {
  *         // Successfully got a response
@@ -51,11 +51,13 @@ import android.util.Log;
  */
 public abstract class BinaryHttpResponseHandler extends AsyncHttpResponseHandler {
 
-    private static final String LOG_TAG = "BinaryHttpResponseHandler";
+    private static final String LOG_TAG = "BinaryHttpRH";
 
     private String[] mAllowedContentTypes = new String[]{
+            RequestParams.APPLICATION_OCTET_STREAM,
             "image/jpeg",
-            "image/png"
+            "image/png",
+            "image/gif"
     };
 
     /**
@@ -83,10 +85,27 @@ public abstract class BinaryHttpResponseHandler extends AsyncHttpResponseHandler
      */
     public BinaryHttpResponseHandler(String[] allowedContentTypes) {
         super();
-        if (allowedContentTypes != null)
+        if (allowedContentTypes != null) {
             mAllowedContentTypes = allowedContentTypes;
-        else
-            Log.e(LOG_TAG, "Constructor passed allowedContentTypes was null !");
+        } else {
+            AsyncHttpClient.log.e(LOG_TAG, "Constructor passed allowedContentTypes was null !");
+        }
+    }
+    
+    /**
+     * Creates a new BinaryHttpResponseHandler with a user-supplied looper, and overrides the default allowed content types with
+     * passed String array (hopefully) of content types.
+     *
+     * @param allowedContentTypes content types array, eg. 'image/jpeg' or pattern '.*'
+     * @param looper The looper to work with
+     */
+    public BinaryHttpResponseHandler(String[] allowedContentTypes, Looper looper) {
+        super(looper);
+        if (allowedContentTypes != null) {
+            mAllowedContentTypes = allowedContentTypes;
+        } else {
+            AsyncHttpClient.log.e(LOG_TAG, "Constructor passed allowedContentTypes was null !");
+        }
     }
 
     @Override
@@ -98,10 +117,18 @@ public abstract class BinaryHttpResponseHandler extends AsyncHttpResponseHandler
     @Override
     public final void sendResponseMessage(HttpResponse response) throws IOException {
         StatusLine status = response.getStatusLine();
-        Header[] contentTypeHeaders = response.getHeaders("Content-Type");
+        Header[] contentTypeHeaders = response.getHeaders(AsyncHttpClient.HEADER_CONTENT_TYPE);
         if (contentTypeHeaders.length != 1) {
             //malformed/ambiguous HTTP Header, ABORT!
-            sendFailureMessage(status.getStatusCode(), response.getAllHeaders(), null, new HttpResponseException(status.getStatusCode(), "None, or more than one, Content-Type Header found!"));
+            sendFailureMessage(
+                status.getStatusCode(),
+                response.getAllHeaders(),
+                null,
+                new HttpResponseException(
+                    status.getStatusCode(),
+                    "None, or more than one, Content-Type Header found!"
+                )
+            );
             return;
         }
         Header contentTypeHeader = contentTypeHeaders[0];
@@ -112,12 +139,20 @@ public abstract class BinaryHttpResponseHandler extends AsyncHttpResponseHandler
                     foundAllowedContentType = true;
                 }
             } catch (PatternSyntaxException e) {
-                Log.e("BinaryHttpResponseHandler", "Given pattern is not valid: " + anAllowedContentType, e);
+                AsyncHttpClient.log.e(LOG_TAG, "Given pattern is not valid: " + anAllowedContentType, e);
             }
         }
         if (!foundAllowedContentType) {
             //Content-Type not in allowed list, ABORT!
-            sendFailureMessage(status.getStatusCode(), response.getAllHeaders(), null, new HttpResponseException(status.getStatusCode(), "Content-Type not allowed!"));
+            sendFailureMessage(
+                status.getStatusCode(),
+                response.getAllHeaders(),
+                null,
+                new HttpResponseException(
+                    status.getStatusCode(),
+                    "Content-Type (" + contentTypeHeader.getValue() + ") not allowed!"
+                )
+            );
             return;
         }
         super.sendResponseMessage(response);

@@ -1,4 +1,35 @@
+/*
+    Android Asynchronous Http Client
+    Copyright (c) 2011 James Smith <james@loopj.com>
+    https://loopj.com
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+        https://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+*/
+
 package com.rae.core.http.async;
+
+import org.apache.http.HttpVersion;
+import org.apache.http.conn.ClientConnectionManager;
+import org.apache.http.conn.scheme.PlainSocketFactory;
+import org.apache.http.conn.scheme.Scheme;
+import org.apache.http.conn.scheme.SchemeRegistry;
+import org.apache.http.conn.ssl.SSLSocketFactory;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.impl.conn.tsccm.ThreadSafeClientConnManager;
+import org.apache.http.params.BasicHttpParams;
+import org.apache.http.params.HttpParams;
+import org.apache.http.params.HttpProtocolParams;
+import org.apache.http.protocol.HTTP;
 
 import java.io.BufferedInputStream;
 import java.io.IOException;
@@ -19,34 +50,21 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 
-import org.apache.http.HttpVersion;
-import org.apache.http.conn.ClientConnectionManager;
-import org.apache.http.conn.scheme.PlainSocketFactory;
-import org.apache.http.conn.scheme.Scheme;
-import org.apache.http.conn.scheme.SchemeRegistry;
-import org.apache.http.conn.ssl.SSLSocketFactory;
-import org.apache.http.impl.client.DefaultHttpClient;
-import org.apache.http.impl.conn.tsccm.ThreadSafeClientConnManager;
-import org.apache.http.params.BasicHttpParams;
-import org.apache.http.params.HttpParams;
-import org.apache.http.params.HttpProtocolParams;
-import org.apache.http.protocol.HTTP;
-
 /**
  * This file is introduced to fix HTTPS Post bug on API &lt; ICS see
- * http://code.google.com/p/android/issues/detail?id=13117#c14 <p>&nbsp;</p> Warning! This omits SSL
+ * https://code.google.com/p/android/issues/detail?id=13117#c14 <p>&nbsp;</p> Warning! This omits SSL
  * certificate validation on every device, use with caution
  */
 public class MySSLSocketFactory extends SSLSocketFactory {
-    SSLContext sslContext = SSLContext.getInstance("TLS");
+    final SSLContext sslContext = SSLContext.getInstance("TLS");
 
     /**
      * Creates a new SSL Socket Factory with the given KeyStore.
      *
      * @param truststore A KeyStore to create the SSL Socket Factory in context of
-     * @throws NoSuchAlgorithmException NoSuchAlgorithmException
-     * @throws KeyManagementException KeyManagementException
-     * @throws KeyStoreException KeyStoreException
+     * @throws NoSuchAlgorithmException  NoSuchAlgorithmException
+     * @throws KeyManagementException    KeyManagementException
+     * @throws KeyStoreException         KeyStoreException
      * @throws UnrecoverableKeyException UnrecoverableKeyException
      */
     public MySSLSocketFactory(KeyStore truststore) throws NoSuchAlgorithmException, KeyManagementException, KeyStoreException, UnrecoverableKeyException {

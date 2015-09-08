@@ -1,10 +1,26 @@
-package com.rae.core.http.async;
+/*
+    Android Asynchronous Http Client
+    Copyright (c) 2011 James Smith <james@loopj.com>
+    https://loopj.com
 
-import java.io.UnsupportedEncodingException;
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+        https://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+*/
+
+package com.rae.core.http.async;
 
 import org.apache.http.Header;
 
-import android.util.Log;
+import java.io.UnsupportedEncodingException;
 
 /**
  * Used to intercept and handle the responses from requests made using {@link AsyncHttpClient}. The
@@ -14,7 +30,7 @@ import android.util.Log;
  * {@link #onFinish()} methods as required. <p>&nbsp;</p> For example: <p>&nbsp;</p>
  * <pre>
  * AsyncHttpClient client = new AsyncHttpClient();
- * client.get("http://www.google.com", new TextHttpResponseHandler() {
+ * client.get("https://www.google.com", new TextHttpResponseHandler() {
  *     &#064;Override
  *     public void onStart() {
  *         // Initiated the request
@@ -38,7 +54,8 @@ import android.util.Log;
  * </pre>
  */
 public abstract class TextHttpResponseHandler extends AsyncHttpResponseHandler {
-    private static final String LOG_TAG = "TextHttpResponseHandler";
+
+    private static final String LOG_TAG = "TextHttpRH";
 
     /**
      * Creates new instance with default UTF-8 encoding
@@ -95,11 +112,14 @@ public abstract class TextHttpResponseHandler extends AsyncHttpResponseHandler {
      */
     public static String getResponseString(byte[] stringBytes, String charset) {
         try {
-            return stringBytes == null ? null : new String(stringBytes, charset);
+            String toReturn = (stringBytes == null) ? null : new String(stringBytes, charset);
+            if (toReturn != null && toReturn.startsWith(UTF8_BOM)) {
+                return toReturn.substring(1);
+            }
+            return toReturn;
         } catch (UnsupportedEncodingException e) {
-            Log.e(LOG_TAG, "Encoding response into string failed", e);
+            AsyncHttpClient.log.e(LOG_TAG, "Encoding response into string failed", e);
             return null;
         }
     }
-
 }

@@ -1,11 +1,28 @@
+/*
+    Android Asynchronous Http Client
+    Copyright (c) 2011 James Smith <james@loopj.com>
+    https://loopj.com
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+        https://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+*/
 package com.rae.core.http.async;
+
+import android.content.Context;
 
 import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.conn.scheme.SchemeRegistry;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.protocol.HttpContext;
-
-import android.content.Context;
 
 /**
  * Processes http requests in synchronous mode, so your caller thread will be blocked on each
@@ -67,7 +84,7 @@ public class SyncHttpClient extends AsyncHttpClient {
                                         String contentType, ResponseHandlerInterface responseHandler,
                                         Context context) {
         if (contentType != null) {
-            uriRequest.addHeader("Content-Type", contentType);
+            uriRequest.addHeader(AsyncHttpClient.HEADER_CONTENT_TYPE, contentType);
         }
 
         responseHandler.setUseSynchronousMode(true);

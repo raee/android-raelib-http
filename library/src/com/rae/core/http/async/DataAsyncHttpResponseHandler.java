@@ -1,15 +1,13 @@
-package com.rae.core.http.async;
-
 /*
     Android Asynchronous Http Client
     Copyright (c) 2011 James Smith <james@loopj.com>
-    http://loopj.com
+    https://loopj.com
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
     You may obtain a copy of the License at
 
-        http://www.apache.org/licenses/LICENSE-2.0
+        https://www.apache.org/licenses/LICENSE-2.0
 
     Unless required by applicable law or agreed to in writing, software
     distributed under the License is distributed on an "AS IS" BASIS,
@@ -18,19 +16,21 @@ package com.rae.core.http.async;
     limitations under the License.
 */
 
-import java.io.IOException;
-import java.io.InputStream;
+package com.rae.core.http.async;
+
+import android.os.Message;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.util.ByteArrayBuffer;
 
-import android.os.Message;
-import android.util.Log;
+import java.io.IOException;
+import java.io.InputStream;
 
+@SuppressWarnings("ALL")
 public abstract class DataAsyncHttpResponseHandler extends AsyncHttpResponseHandler {
-    private static final String LOG_TAG = "DataAsyncHttpResponseHandler";
+    private static final String LOG_TAG = "DataAsyncHttpRH";
 
-    protected static final int PROGRESS_DATA_MESSAGE = 6;
+    protected static final int PROGRESS_DATA_MESSAGE = 7;
 
     /**
      * Creates a new AsyncHttpResponseHandler
@@ -45,6 +45,7 @@ public abstract class DataAsyncHttpResponseHandler extends AsyncHttpResponseHand
      * @param responseBody response body received so far
      */
     public void onProgressData(byte[] responseBody) {
+        AsyncHttpClient.log.d(LOG_TAG, "onProgressData(byte[]) was not overriden, but callback was received");
     }
 
 
@@ -65,10 +66,10 @@ public abstract class DataAsyncHttpResponseHandler extends AsyncHttpResponseHand
                     try {
                         onProgressData((byte[]) response[0]);
                     } catch (Throwable t) {
-                        Log.e(LOG_TAG, "custom onProgressData contains an error", t);
+                        AsyncHttpClient.log.e(LOG_TAG, "custom onProgressData contains an error", t);
                     }
                 } else {
-                    Log.e(LOG_TAG, "PROGRESS_DATA_MESSAGE didn't got enough params");
+                    AsyncHttpClient.log.e(LOG_TAG, "PROGRESS_DATA_MESSAGE didn't got enough params");
                 }
                 break;
         }
@@ -99,11 +100,12 @@ public abstract class DataAsyncHttpResponseHandler extends AsyncHttpResponseHand
                     ByteArrayBuffer buffer = new ByteArrayBuffer((int) contentLength);
                     try {
                         byte[] tmp = new byte[BUFFER_SIZE];
-                        int l;
+                        int l, count = 0;
                         // do not send messages if request has been cancelled
                         while ((l = instream.read(tmp)) != -1 && !Thread.currentThread().isInterrupted()) {
                             buffer.append(tmp, 0, l);
                             sendProgressDataMessage(copyOfRange(tmp, 0, l));
+                            sendProgressMessage(count, contentLength);
                         }
                     } finally {
                         AsyncHttpClient.silentCloseInputStream(instream);
